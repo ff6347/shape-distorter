@@ -1,96 +1,1 @@
-// {
-// basic panel
-run_distort(this);
-
- function run_distort(thisObj){
-
-// this is global
-distort_data =  {
-    'x':5,
-    'y':5
-};
-
-
-///   THIS WILL CHECK IF PANEL IS DOCKABLE OR FLAOTING WINDOW  
-var win   = buildUI(thisObj );
-if ((win !== null) && (win instanceof Window)) {
-    win.center();
-    win.show();
-} // end if win  null and not a instance of window 
-
- function buildUI (thisObj  ) {
-    var win = (thisObj instanceof Panel) ? thisObj :  new Window('palette', 'shape-distorter',[0,0,150,260],{resizeable: true});
-
-    if (win !== null) {
-
-        var H = 25; // the height
-        var W = 30; // the width
-        var G = 5; // the gutter
-        var x = G;
-        var y = G;
-
-        // win.check_box = win.add('checkbox',[x,y,x+W*2,y + H],'check');
-        // win.check_box.value = metaObject.setting1;
-        win.doit_button = win.add('button', [x ,y,x+W*3,y + H], 'do it');
-        // win.up_button = win.add('button', [x + W*5+ G,y,x + W*6,y + H], 'Up'); 
-
-        // win.check_box.onClick = function (){
-        //     alert("check");
-        // };
-        win.doit_button.onClick = function () {
-            distort();
-      };
-
-    }
-    return win;
-}
-
-
-function distort(){
-// "in function main. From here on it is a straight run"
-// 
-            var curComp = app.project.activeItem;
-   if (!curComp || !(curComp instanceof CompItem)){
-        alert('please select a comp');
-        return;
-    }
-
-    if(curComp.selectedProperties.length < 1){
-        alert('Please select one Path');
-    return;
-        }
-    app.beginUndoGroup('distort');
-
-    var props = curComp.selectedProperties;
-        if(props.length > 0){
-            var path = props[0].property("ADBE Vector Shape");
-            if(path.value instanceof Shape){
-                var orig_shape = path.value;
-                var orig_verts = orig_shape.vertices;
-                var new_verts = [];
-
-                for(var i =0; i < orig_verts.length;i++){
-                    var x_plusOrMinus = Math.random() < 0.5 ? -1 : 1;
-                    var y_plusOrMinus = Math.random() < 0.5 ? -1 : 1;
-                    new_verts.push([orig_verts[i][0] + (distort_data.x * x_plusOrMinus),orig_verts[i][1]+ (distort_data.y * y_plusOrMinus)]);
-                    var distorted_shape = new Shape();
-                    distorted_shape.vertices = new_verts;
-                    distorted_shape.closed = orig_shape.closed;
-                    if(!path.isTimeVarying){
-
-                    path.setValue(distorted_shape);
-                    }else{
-                    path.setValueAtTime(curComp.time, distorted_shape);
-                    }
-
-
-                }
-                // alert(orig_verts.toString() + '\n' + new_verts.toString());
-            }
-        }
-
-       app.endUndoGroup();
-    }
- }// close run_distort
-
-// }
+﻿// {// basic panel// Copyright (c)  2013// Fabian "fabiantheblind" Morón Zirfas// Permission is hereby granted, free of charge, to any// person obtaining a copy of this software and associated// documentation files (the "Software"), to deal in the Software// without restriction, including without limitation the rights// to use, copy, modify, merge, publish, distribute, sublicense,// and/or sell copies of the Software, and to  permit persons to// whom the Software is furnished to do so, subject to// the following conditions:// The above copyright notice and this permission notice// shall be included in all copies or substantial portions of the Software.// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF  CONTRACT,// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTIO// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.// see also http://www.opensource.org/licenses/mit-license.phprun_distort(this); function run_distort(thisObj){// this is globaldistort_data =  {  'x':5,  'y':5,  'distort_in_out_tan':true};///   THIS WILL CHECK IF PANEL IS DOCKABLE OR FLAOTING WINDOW  var win   = buildUI(thisObj );if ((win !== null) && (win instanceof Window)) {  win.center();  win.show();} // end if win  null and not a instance of window  function buildUI (thisObj  ) {       var H = 25; // the height    var W = 30; // the width    var G = 5; // the gutter    var x = G;    var y = G;  var win = (thisObj instanceof Panel) ? thisObj :  new Window('palette', 'shape-distorter',[0,0,W*6+3*G,H*4+5*G],{resizeable: true});  if (win !== null) {    win.check_box_inouttan = win.add('checkbox',[x,y,x+W*5,y + H],'in tan out tan?');    win.check_box_inouttan.value = distort_data.distort_in_out_tan;    y+=H+G;    win.x_label_range = win.add('statictext',[x,y,x+W*3,y+H],'x distort range: ');    x+=W*3+G;    win.x_range = win.add('edittext',[x,y,x+W*3,y+H],String(distort_data.x));    x=G;    y+=H+G;    // win.x_slider = w.add ("slider", [x,y,x+W*6+G,y+H], 50, 0, 100);    win.y_label_range = win.add('statictext',[x,y,x+W*3,y+H],'y distort range: ');    x+=W*3+G;    win.y_range = win.add('edittext',[x,y,x+W*3,y+H],String(distort_data.y));    x=G;    y+=H+G;    win.doit_button = win.add('button', [x ,y,x+W*6+G,y + H], 'distort');    // win.up_button = win.add('button', [x + W*5+ G,y,x + W*6,y + H], 'Up');     win.check_box_inouttan.onClick = function (){      distort_data.distort_in_out_tan = this.value;    };    win.doit_button.onClick = function () {      distort();    };    win.x_range.onChange = function  () {      distort_data.x = parseInt(this.value,10);    };    win.y_range.onChange = function  () {      distort_data.y = parseInt(this.value,10);    };    // slider.onChanging = function () {e.text = slider.value;}  }  return win;}  //  ______ _   _ _____     ____  ______   _    _ _____   // |  ____| \ | |  __ \   / __ \|  ____| | |  | |_   _|  // | |__  |  \| | |  | | | |  | | |__    | |  | | | |    // |  __| | . ` | |  | | | |  | |  __|   | |  | | | |    // | |____| |\  | |__| | | |__| | |      | |__| |_| |_   // |______|_| \_|_____/   \____/|_|       \____/|_____|function distort(){// "in function main. From here on it is a straight run"//       var curComp = app.project.activeItem;   if (!curComp || !(curComp instanceof CompItem)){    alert('please select a comp');    return;  }  if(curComp.selectedProperties.length < 1){    alert('Please select one Path');  return;    }  app.beginUndoGroup('distort');  var props = curComp.selectedProperties;    if(props.length > 0){//~             alert(props[0].constructor.name);//~             return;      if((props[0] instanceof MaskPropertyGroup)||(props[0] instanceof PropertyGroup)){        var path = null;      if(props[0] instanceof MaskPropertyGroup){        path = props[0].property("ADBE Mask Shape");        }else if(props[0] instanceof PropertyGroup){        path = props[0].property("ADBE Vector Shape");          }else if(path === null){return;}else if(path.value === null){return;}//~             if((path instanceof ))      if(path.value instanceof Shape){        var orig_shape = path.value;        var orig_verts = orig_shape.vertices;        var orig_shape_in_tan = orig_shape.inTangents;        var orig_shape_out_tan = orig_shape.outTangents;        var new_verts = [];        var new_intan = [];        var new_outtan = [];        for(var i =0; i < orig_verts.length;i++){          var x_plusOrMinus = Math.random() < 0.5 ? -1 : 1;          var y_plusOrMinus = Math.random() < 0.5 ? -1 : 1;          new_verts.push(            [orig_verts[i][0] + (distort_data.x * x_plusOrMinus),            orig_verts[i][1]+ (distort_data.y * y_plusOrMinus)]            );          var distorted_shape = new Shape();          distorted_shape.vertices = new_verts;          if(distort_data.distort_in_out_tan === true){          new_intan.push(            [orig_shape_in_tan[i][0] + (distort_data.x * x_plusOrMinus),            orig_shape_in_tan[i][1]+ (distort_data.y * y_plusOrMinus)]            );          new_outtan.push(            [orig_shape_out_tan[i][0] + (distort_data.x * x_plusOrMinus),            orig_shape_out_tan[i][1]+ (distort_data.y * y_plusOrMinus)]            );          distorted_shape.inTangents = new_intan;          distorted_shape.outTangents = new_outtan;          }          distorted_shape.closed = orig_shape.closed;          if(!path.isTimeVarying){          path.setValue(distorted_shape);          }else{          path.setValueAtTime(curComp.time, distorted_shape);          }        }        // alert(orig_verts.toString() + '\n' + new_verts.toString());      }    }    }     app.endUndoGroup();  } }// close run_distort// }
